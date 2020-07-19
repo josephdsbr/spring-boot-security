@@ -3,6 +3,7 @@ package com.security.springsecurity.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -11,11 +12,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static com.security.springsecurity.models.enums.ApplicationUserRole.*;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
   private final PasswordEncoder passwordEncoder;
 
@@ -23,10 +26,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
   public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
     this.passwordEncoder = passwordEncoder;
   }
-
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
+        .csrf().disable()
         .authorizeRequests()
         .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
         .antMatchers("/students/**").hasRole(STUDENT.name())
@@ -42,19 +45,19 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     UserDetails user = User.builder()
         .username("jose_vinicius")
         .password(passwordEncoder.encode("password"))
-        .roles(STUDENT.name())
+        .authorities(STUDENT.getGrantedAuthorities())
         .build();
 
     UserDetails userAdmin = User.builder()
         .username("douglas_santos")
         .password(passwordEncoder.encode("password123"))
-        .roles(ADMIN.name())
+        .authorities(ADMIN.getGrantedAuthorities())
         .build();
 
     UserDetails userAdminTrainne = User.builder()
-        .username("dayanne_santos")
+        .username("dayane_santos")
         .password(passwordEncoder.encode("password123"))
-        .roles(ADMINTRAINNE.name())
+        .authorities(ADMINTRAINNE.getGrantedAuthorities())
         .build();
 
     return new InMemoryUserDetailsManager(user, userAdmin, userAdminTrainne);
